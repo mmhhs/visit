@@ -3,8 +3,10 @@ package com.little.visit.impl;
 import android.content.Context;
 import android.view.View;
 
+import com.little.visit.R;
 import com.little.visit.listener.ResultJudgeInterface;
 import com.little.visit.util.StringUtil;
+import com.little.visit.util.ToastUtil;
 
 public class ResultJudge implements ResultJudgeInterface{
 
@@ -59,6 +61,6 @@ public class ResultJudge implements ResultJudgeInterface{
      */
     @Override
     public void dealLoginInvalid(Context context,View view) {
-
+        ToastUtil.addToast(context,context.getString(R.string.visit7));
     }
 }

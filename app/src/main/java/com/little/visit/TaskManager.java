@@ -32,9 +32,7 @@ public class TaskManager {
 			taskModel.task = task;
 			taskModel.creatTime = System.currentTimeMillis();
 			taskList.add(taskModel);
-//			LogUtil.e("******addTask*******"+ System.currentTimeMillis());
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}
@@ -50,7 +48,6 @@ public class TaskManager {
 					taskModel.task.cancel(true);
 				}
 			} catch (Exception e) {
-				// TODO: handle exception
 				e.printStackTrace();
 			}
 		}
@@ -75,7 +72,6 @@ public class TaskManager {
 					}
 				}
 			} catch (Exception e) {
-				// TODO: handle exception
 				e.printStackTrace();
 			}
 		}
@@ -102,7 +98,6 @@ public class TaskManager {
 					break;
 				}
 			} catch (Exception e) {
-				// TODO: handle exception
 				e.printStackTrace();
 			}
 		}
@@ -121,7 +116,6 @@ public class TaskManager {
 					break;
 				}
 			} catch (Exception e) {
-				// TODO: handle exception
 				e.printStackTrace();
 			}
 		}
