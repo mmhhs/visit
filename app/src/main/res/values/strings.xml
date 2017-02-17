@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Visit</string>
+    <string name="visit0">正在加载</string>
+    <string name="visit1">未获取到内容</string>
+    <string name="visit2">请点击页面重试</string>
+    <string name="visit3">网络不给力，查看下吧！</string>
+    <string name="visit4">连接服务器异常，请稍后再试！</string>
+    <string name="visit5">当前没有数据</string>
+    <string name="visit6">下载失败</string>
+</resources>

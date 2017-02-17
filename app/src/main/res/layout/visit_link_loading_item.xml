@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+
+    <ProgressBar
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:indeterminateDrawable="@drawable/visit_progress_loading"
+        android:indeterminateDuration="1000"
+        android:indeterminate="true"
+        />
+
+    <TextView
+        android:id="@+id/visit_link_loading_item_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/visit_deep_grey"
+        android:text="@string/visit0" />
+    
+    
+
+</LinearLayout>

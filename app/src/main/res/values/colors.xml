@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="visit_black">#000000</color>
+    <color name="visit_deep_grey">#484848</color>
+    <color name="visit_white">#ffffff</color>
+    <color name="visit_light_grey">#b8b8b8</color>
+    <color name="visit_transparent">#70000000</color>
+    <!-- progressbar -->
+    <color name="visit_progress_bar_bg">#d9d9d9</color>
+    <color name="visit_progress_bar_on1">#76d231</color>
+    <color name="visit_progress_bar_on2">#7cdb37</color>
+</resources>
