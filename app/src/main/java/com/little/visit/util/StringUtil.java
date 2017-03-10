@@ -44,7 +44,16 @@ public class StringUtil {
      * @return if string is null or its size is 0, return true, else return false.
      */
     public static boolean isEmpty(CharSequence str) {
-        return (str == null || str.length() == 0);
+        if (str==null){
+            return true;
+        }
+        if (str.equals("")){
+            return true;
+        }
+        if (str.length() <= 0){
+            return true;
+        }
+        return false;
     }
 
 
