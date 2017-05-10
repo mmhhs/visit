@@ -89,6 +89,7 @@ public class PageVisitTask extends VisitTask {
 	public void onPreExecute()
 	{
 		try {
+			super.onPreExecute();
 			if(StringUtil.isEmpty(loadingString)){
 				loadingString = context.getResources().getString(R.string.visit0);
 			}
