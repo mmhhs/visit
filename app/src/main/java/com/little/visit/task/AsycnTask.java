@@ -100,7 +100,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     is executed. This step is normally used to setup the task, for instance by
  *     showing a progress bar in the user interface.</li>
  *     <li>{@link #doInBackground(Object[])}, invoked on the background thread
- *     immediately after {@link # onPreExecute ()} finishes executing. This step is used
+ *     immediately after {@link # onTaskPreExecute ()} finishes executing. This step is used
  *     to perform background computation that can take a long time. The parameters
  *     of the user task are passed to this step. The result of the computation must
  *     be returned by this step and will be passed back to the last step. This step
@@ -123,7 +123,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <ul>
  *     <li>The task instance must be created on the UI thread.</li>
  *     <li>{@link #execute(Object[])} must be invoked on the UI thread.</li>
- *     <li>Do not call {@link # onPreExecute ()}, {@link # onPostExecute (Object)},
+ *     <li>Do not call {@link # onTaskPreExecute ()}, {@link # onPostExecute (Object)},
  *     {@link #doInBackground(Object[])}, {@link # onProgressUpdate (Object[])}
  *     manually.</li>
  *     <li>The task can be executed only once (an exception will be thrown if
@@ -215,7 +215,7 @@ public abstract class AsycnTask<Params, Progress, Result> {
                 } catch (InterruptedException e) {
                     android.util.Log.w(LOG_TAG, e);
                 } catch (ExecutionException e) {
-                    throw new RuntimeException("An onError occured while executing doInBackground()",
+                    throw new RuntimeException("An onTaskError occured while executing doInBackground()",
                             e.getCause());
                 } catch (CancellationException e) {
                     message = sHandler.obtainMessage(MESSAGE_POST_CANCEL,
@@ -223,7 +223,7 @@ public abstract class AsycnTask<Params, Progress, Result> {
                     message.sendToTarget();
                     return;
                 } catch (Throwable t) {
-                    throw new RuntimeException("An onError occured while executing "
+                    throw new RuntimeException("An onTaskError occured while executing "
                             + "doInBackground()", t);
                 }
 

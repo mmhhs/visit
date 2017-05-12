@@ -2,6 +2,7 @@ package com.little.visit.task;
 
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -198,70 +199,74 @@ public class VolleyTask implements IOnTaskListener{
     }
 
     public void execute(){
-        onPreExecute();
+        onTaskPreExecute();
         if(netFlag!=NET_ERROR){
-           onVisit();
+           onTaskVisit();
         }
     }
 
     @Override
-    public void onPreExecute() {
-        if(!HttpUtil.isNet(context)){
-            netFlag = NET_ERROR;
-            if (showStyle==POPUPSTYLE){
-                if (showNetToast) {
-                    ToastUtil.addToast(context, context.getResources().getString(R.string.visit3));
-                }
-            }else if (showStyle==VIEWSTYLE){
-                if (showLoading) {
-                    if(contentView != null && loadingLayout != null){
-                        viewUtil.addErrorView(context, context.getString(R.string.visit3),
-                                contentView, loadingLayout, onRetryListener);
-                    }
-                }else {
-                    ToastUtil.addToast(context, context.getString(R.string.visit3));
-                }
-            }
-        }else {
-            if (showLoading) {
+    public void onTaskPreExecute() {
+        try {
+            if(!HttpUtil.isNet(context)){
+                netFlag = NET_ERROR;
                 if (showStyle==POPUPSTYLE){
-                    if(contentView !=null){
-                        loadPopupWindow = popupUtil.showLoadingPopup(contentView, loadingString);
+                    if (showNetToast) {
+                        ToastUtil.addToast(context, context.getResources().getString(R.string.visit3));
                     }
                 }else if (showStyle==VIEWSTYLE){
-                    if(contentView != null && loadingLayout != null){
-                        viewUtil.addLoadView(context, loadingString, contentView, loadingLayout);
+                    if (showLoading) {
+                        if(contentView != null && loadingLayout != null){
+                            viewUtil.addErrorView(context, context.getString(R.string.visit3),
+                                    contentView, loadingLayout, onRetryListener);
+                        }
+                    }else {
+                        ToastUtil.addToast(context, context.getString(R.string.visit3));
+                    }
+                }
+            }else {
+                if (showLoading) {
+                    if (showStyle==POPUPSTYLE){
+                        if(contentView !=null){
+                            loadPopupWindow = popupUtil.showLoadingPopup(contentView, loadingString);
+                        }
+                    }else if (showStyle==VIEWSTYLE){
+                        if(contentView != null && loadingLayout != null){
+                            viewUtil.addLoadView(context, loadingString, contentView, loadingLayout);
+                        }
                     }
                 }
             }
+        } catch (Resources.NotFoundException e) {
+            e.printStackTrace();
         }
     }
 
 
 
     @Override
-    public void onVisit() {
+    public void onTaskVisit() {
         switch (visitType){
             case INTERFACE_VISIT:
                 volleyUtil.visit(accessType, httpUrl, tagString, argMap, new IOnVisitListener<String>() {
                     @Override
                     public void onSuccess(String response) {
-                        onSuccess(response);
+                        onTaskSuccess(response);
                     }
 
                     @Override
                     public void onError() {
-                        onError();
+                        onTaskError();
                     }
 
                     @Override
                     public void onFinish() {
-                        onFinish();
+                        onTaskFinish();
                     }
 
                     @Override
                     public void onCancel() {
-                        onCancel();
+                        onTaskCancel();
                     }
                 });
                 break;
@@ -269,22 +274,22 @@ public class VolleyTask implements IOnTaskListener{
                 volleyUtil.uploadFile(httpUrl, tagString, keyString, fileList, argMap, new IOnVisitListener<String>() {
                     @Override
                     public void onSuccess(String response) {
-                        onSuccess(response);
+                        onTaskSuccess(response);
                     }
 
                     @Override
                     public void onError() {
-                        onError();
+                        onTaskError();
                     }
 
                     @Override
                     public void onFinish() {
-                        onFinish();
+                        onTaskFinish();
                     }
 
                     @Override
                     public void onCancel() {
-                        onCancel();
+                        onTaskCancel();
                     }
                 });
                 break;
@@ -292,22 +297,22 @@ public class VolleyTask implements IOnTaskListener{
                 volleyUtil.downloadFile(httpUrl, tagString, filePath, new IOnVisitListener<String>() {
                     @Override
                     public void onSuccess(String response) {
-                        onSuccess(response);
+                        onTaskSuccess(response);
                     }
 
                     @Override
                     public void onError() {
-                        onError();
+                        onTaskError();
                     }
 
                     @Override
                     public void onFinish() {
-                        onFinish();
+                        onTaskFinish();
                     }
 
                     @Override
                     public void onCancel() {
-                        onCancel();
+                        onTaskCancel();
                     }
                 });
                 break;
@@ -315,22 +320,22 @@ public class VolleyTask implements IOnTaskListener{
                 volleyUtil.downloadImage(httpUrl, tagString, new IOnVisitListener<Bitmap>() {
                     @Override
                     public void onSuccess(Bitmap response) {
-                        onSuccess(response);
+                        onTaskSuccess(response);
                     }
 
                     @Override
                     public void onError() {
-                        onError();
+                        onTaskError();
                     }
 
                     @Override
                     public void onFinish() {
-                        onFinish();
+                        onTaskFinish();
                     }
 
                     @Override
                     public void onCancel() {
-                        onCancel();
+                        onTaskCancel();
                     }
                 });
                 break;
@@ -338,80 +343,90 @@ public class VolleyTask implements IOnTaskListener{
     }
 
     @Override
-    public void onSuccess(Object response) {
-        if (!isCanceled){
-            switch (visitType) {
-                case INTERFACE_VISIT:
-                case UPLOAD_FILE_VISIT:
-                    resultsString = (String)response;
-                    JacksonUtil json = JacksonUtil.getInstance();
-                    resultEntity = (ResultEntity)json.readValue(resultsString, parseClass);
-                    if(resultEntity !=null){
-                        resultMsg = resultEntity.getMsg();
-                        if(resultJudge.judgeSuccess("" + resultEntity.getCode())){
-                            if(onVisitResultListener !=null){
-                                this.onVisitResultListener.onSuccess(resultEntity);
-                            }
-                            if (!StringUtil.isEmpty(resultMsg)&&showTipSuccess){
-                                ToastUtil.addToast(context, resultMsg + "");
-                            }
-                        }else{
-                            judgeLoginInvalid(""+ resultEntity.getCode());
-                            if(onVisitResultListener !=null){
-                                this.onVisitResultListener.onError(resultMsg);
-                            }
-                            if (!StringUtil.isEmpty(resultMsg)&&showTipError){
-                                ToastUtil.addToast(context, resultMsg +"");
-                            }
-                            dealLoginInvalid();
-                            if (showStyle==VIEWSTYLE){
-                                if (showLoading) {
-                                    showErrorView = true;
-                                    viewUtil.addErrorView(context, context.getString(R.string.visit1),
-                                            contentView, loadingLayout, onRetryListener);
+    public void onTaskSuccess(Object response) {
+        try {
+            if (!isCanceled){
+                switch (visitType) {
+                    case INTERFACE_VISIT:
+                    case UPLOAD_FILE_VISIT:
+                        resultsString = (String)response;
+                        JacksonUtil json = JacksonUtil.getInstance();
+                        resultEntity = (ResultEntity)json.readValue(resultsString, parseClass);
+                        if(resultEntity !=null){
+                            resultMsg = resultEntity.getMsg();
+                            if(resultJudge.judgeSuccess("" + resultEntity.getCode())){
+                                if(onVisitResultListener !=null){
+                                    this.onVisitResultListener.onSuccess(resultEntity);
+                                }
+                                if (!StringUtil.isEmpty(resultMsg)&&showTipSuccess){
+                                    ToastUtil.addToast(context, resultMsg + "");
+                                }
+                            }else{
+                                judgeLoginInvalid(""+ resultEntity.getCode());
+                                if(onVisitResultListener !=null){
+                                    this.onVisitResultListener.onError(resultMsg);
+                                }
+                                if (!StringUtil.isEmpty(resultMsg)&&showTipError){
+                                    ToastUtil.addToast(context, resultMsg +"");
+                                }
+                                dealLoginInvalid();
+                                if (showStyle==VIEWSTYLE){
+                                    if (showLoading) {
+                                        showErrorView = true;
+                                        viewUtil.addErrorView(context, context.getString(R.string.visit1),
+                                                contentView, loadingLayout, onRetryListener);
+                                    }
                                 }
                             }
+                        }else{
+                            ToastUtil.addToast(context, context.getString(R.string.visit4));
                         }
-                    }else{
-                        ToastUtil.addToast(context, context.getString(R.string.visit4));
-                    }
-                    break;
-                case DOWNLOAD_FILE_VISIT:
-                    String filePath = (String)response;
-                    if(onVisitResultListener !=null){
-                        this.onVisitResultListener.onSuccess(filePath);
-                    }
-                    break;
-                case DOWNLOAD_IMAGE_VISIT:
-                    Bitmap bitmap = (Bitmap)response;
-                    if(onVisitResultListener !=null){
-                        this.onVisitResultListener.onSuccess(bitmap);
-                    }
-                    break;
+                        break;
+                    case DOWNLOAD_FILE_VISIT:
+                        String filePath = (String)response;
+                        if(onVisitResultListener !=null){
+                            this.onVisitResultListener.onSuccess(filePath);
+                        }
+                        break;
+                    case DOWNLOAD_IMAGE_VISIT:
+                        Bitmap bitmap = (Bitmap)response;
+                        if(onVisitResultListener !=null){
+                            this.onVisitResultListener.onSuccess(bitmap);
+                        }
+                        break;
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void onError() {
-        resultMsg = context.getString(R.string.visit4);
-        if(onVisitResultListener !=null){
-            this.onVisitResultListener.onError(resultMsg);
-        }
-        if (!StringUtil.isEmpty(resultMsg)&&showTipError){
-            ToastUtil.addToast(context, resultMsg);
-        }
-        if (showStyle==VIEWSTYLE){
-            if (showLoading) {
-                showErrorView = true;
-                viewUtil.addErrorView(context, resultMsg,
-                        contentView, loadingLayout, onRetryListener);
+    public void onTaskError() {
+        try {
+            if (!isCanceled) {
+                resultMsg = context.getString(R.string.visit4);
+                if(onVisitResultListener !=null){
+                    this.onVisitResultListener.onError(resultMsg);
+                }
+                if (!StringUtil.isEmpty(resultMsg)&&showTipError){
+                    ToastUtil.addToast(context, resultMsg);
+                }
+                if (showStyle==VIEWSTYLE){
+                    if (showLoading) {
+                        showErrorView = true;
+                        viewUtil.addErrorView(context, resultMsg,
+                                contentView, loadingLayout, onRetryListener);
+                    }
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void onFinish() {
+    public void onTaskFinish() {
         try {
             if (showLoading){
                 if (showStyle==POPUPSTYLE){
@@ -433,7 +448,7 @@ public class VolleyTask implements IOnTaskListener{
     }
 
     @Override
-    public void onCancel() {
+    public void onTaskCancel() {
         isCanceled = true;
     }
 
