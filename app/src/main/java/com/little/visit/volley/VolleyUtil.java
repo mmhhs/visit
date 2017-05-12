@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -31,7 +32,8 @@ public class VolleyUtil {
         if (volleyUtil==null){
             volleyUtil = new VolleyUtil(context);
         }
-        return volleyUtil;
+
+    return volleyUtil;
     }
 
     public RequestQueue getRequestQueue() {
@@ -56,6 +58,9 @@ public class VolleyUtil {
      * @return
      */
     public CustomStringRequest visit(int method, String url,String tag,final Map<String, String> params, final IOnVisitListener onVisitListener){
+        if (url.startsWith("https")) {
+            HTTPSTrustManager.allowAllSSL();
+        }
         CustomStringRequest customStringRequest = new CustomStringRequest(method, url,
                 new Response.Listener<String>() {
                     @Override
@@ -80,17 +85,21 @@ public class VolleyUtil {
                     }
                 };
         customStringRequest.setOnVisitListener(onVisitListener);
+        setRetryPolicy(customStringRequest,2*60*1000);
         add(customStringRequest, tag);
         return customStringRequest;
     }
 
     /**
      * 下载图片 ImageRequest
-     * @param imageUrl
+     * @param url
      * @param tag
      */
-    public void downloadImage(String imageUrl,String tag, final IOnVisitListener onVisitListener) {
-        CustomImageRequest request = new CustomImageRequest(imageUrl,
+    public void downloadImage(String url,String tag, final IOnVisitListener onVisitListener) {
+        if (url.startsWith("https")) {
+            HTTPSTrustManager.allowAllSSL();
+        }
+        CustomImageRequest customImageRequest = new CustomImageRequest(url,
                 new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap bitmap) {
@@ -106,12 +115,16 @@ public class VolleyUtil {
                         }
                     }
                 });
-        request.setPriority(Request.Priority.LOW);
-        request.setOnVisitListener(onVisitListener);
-        add(request, tag);
+        customImageRequest.setPriority(Request.Priority.LOW);
+        customImageRequest.setOnVisitListener(onVisitListener);
+        setRetryPolicy(customImageRequest,10*60*1000);
+        add(customImageRequest, tag);
     }
 
-    public void downloadImage(String imageUrl,ImageView imageView) {
+    public void downloadImage(String url,ImageView imageView) {
+        if (url.startsWith("https")) {
+            HTTPSTrustManager.allowAllSSL();
+        }
         ImageLoader imageLoader = new ImageLoader(getRequestQueue(), new ImageLoader.ImageCache() {
             @Override
             public void putBitmap(String url, Bitmap bitmap) {
@@ -124,7 +137,7 @@ public class VolleyUtil {
         });
         ImageLoader.ImageListener listener = ImageLoader.getImageListener(imageView,
                 R.color.visit_light_grey, R.color.visit_light_grey);
-        imageLoader.get(imageUrl,listener,360,640);
+        imageLoader.get(url,listener,360,640);
     }
 
     /**
@@ -137,6 +150,9 @@ public class VolleyUtil {
      * @return
      */
     public UploadFileRequest uploadFile(String url,String tag,String filePartName, List<File> files,final Map<String, String> params, final IOnVisitListener onVisitListener){
+        if (url.startsWith("https")) {
+            HTTPSTrustManager.allowAllSSL();
+        }
         UploadFileRequest uploadFileRequest = new UploadFileRequest(url,filePartName,files,params,
                 new Response.Listener<String>() {
                     @Override
@@ -156,6 +172,7 @@ public class VolleyUtil {
                 });
         uploadFileRequest.setShouldCache(false);
         uploadFileRequest.setOnVisitListener(onVisitListener);
+        setRetryPolicy(uploadFileRequest,10*60*1000);
         add(uploadFileRequest,tag);
         return uploadFileRequest;
     }
@@ -168,6 +185,9 @@ public class VolleyUtil {
      * @return
      */
     public DownloadFileRequest downloadFile(String url,String tag,String filePath, final IOnVisitListener onVisitListener){
+        if (url.startsWith("https")) {
+            HTTPSTrustManager.allowAllSSL();
+        }
         DownloadFileRequest downloadFileRequest = new DownloadFileRequest(url,filePath,
                 new Response.Listener<String>() {
                     @Override
@@ -187,8 +207,16 @@ public class VolleyUtil {
                 });
         downloadFileRequest.setShouldCache(false);
         downloadFileRequest.setOnVisitListener(onVisitListener);
+        setRetryPolicy(downloadFileRequest,10*60*1000);
         add(downloadFileRequest,tag);
         return downloadFileRequest;
+    }
+
+    public void setRetryPolicy(Request request,int timeOutMs){
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                timeOutMs,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
     }
 
 }

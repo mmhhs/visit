@@ -36,13 +36,13 @@ public class VolleyTask implements IOnTaskListener{
     public final static int DOWNLOAD_IMAGE_VISIT = 4;//图片下载
     private int showStyle = POPUPSTYLE;//遮挡方式：1是弹窗，2是界面
     private Context context;
-    public View contentView;//内容界面
-    public LinearLayout loadingLayout;//加载界面
-    public IOnRetryListener onRetryListener;//重试操作监听
-    public ViewUtil viewUtil;//视图管理
+    private View contentView;//内容界面
+    private LinearLayout loadingLayout;//加载界面
+    private IOnRetryListener onRetryListener;//重试操作监听
+    private ViewUtil viewUtil;//视图管理
 
-    public PopupUtil popupUtil;//弹窗管理
-    public PopupWindow loadPopupWindow;//加载框
+    private PopupUtil popupUtil;//弹窗管理
+    private PopupWindow loadPopupWindow;//加载框
 
     private IOnVisitResultListener onVisitResultListener;//返回值判断结果监听
     //显示
@@ -54,23 +54,23 @@ public class VolleyTask implements IOnTaskListener{
 
     //访问
     private int visitType = INTERFACE_VISIT;//访问类型 接口，文件上传，文件下载，图片下载
-    public int accessType;//访问方式
-    public String httpUrl = "";//访问路径
-    public Map<String, String> argMap;//访问参数
-    public List<File> fileList;//上传文件列表
-    public String filePath = "";//下载文件存储路径
-    public String keyString = "FileData";//上传文件键值
-    public String tagString = "VolleyTask";//线程标记
+    private int accessType;//访问方式
+    private String httpUrl = "";//访问路径
+    private Map<String, String> argMap;//访问参数
+    private List<File> fileList;//上传文件列表
+    private String filePath = "";//下载文件存储路径
+    private String keyString = "FileData";//上传文件键值
+    private String tagString = "VolleyTask";//线程标记
     private VolleyUtil volleyUtil;
-    public int netFlag = 0;//网络标识
+    private int netFlag = 0;//网络标识
     //解析
     private ResultEntity resultEntity;//返回值解析结果父类 向上转型
     public Class parseClass;//用于解析的实体类
     public ResultJudge resultJudge;//返回值判断实现类，子类继承需设置*
     //返回值
-    public String resultMsg;//返回提示信息
+    private String resultMsg;//返回提示信息
     private String resultsString = null;//返回值
-    public boolean loginInvalid = false;//登录失效
+    private boolean loginInvalid = false;//登录失效
     private boolean isCanceled = false;//任务终止
     private boolean showErrorView = false;//显示错误页面
 
@@ -135,18 +135,16 @@ public class VolleyTask implements IOnTaskListener{
      * @param showLoading
      * @param visitType
      * @param httpUrl
-     * @param argMap
      * @param filePath
      * @param parseClass
      */
-    public VolleyTask(Context context, String tagString, View contentView, boolean showLoading, int visitType, String httpUrl, Map<String, String> argMap, String filePath, Class parseClass) {
+    public VolleyTask(Context context, String tagString, View contentView, boolean showLoading, int visitType, String httpUrl, String filePath, Class parseClass) {
         this.context = context;
         this.showStyle = POPUPSTYLE;
         this.contentView = contentView;
         this.showLoading = showLoading;
         this.visitType = visitType;
         this.httpUrl = httpUrl;
-        this.argMap = argMap;
         this.tagString = tagString;
         this.parseClass = parseClass;
         this.filePath = filePath;
@@ -291,9 +289,9 @@ public class VolleyTask implements IOnTaskListener{
                 });
                 break;
             case DOWNLOAD_FILE_VISIT:
-                volleyUtil.downloadFile(httpUrl, tagString, filePath, new IOnVisitListener<File>() {
+                volleyUtil.downloadFile(httpUrl, tagString, filePath, new IOnVisitListener<String>() {
                     @Override
-                    public void onSuccess(File response) {
+                    public void onSuccess(String response) {
                         onSuccess(response);
                     }
 
