@@ -95,7 +95,7 @@ public class VolleyUtil {
      * @param url
      * @param tag
      */
-    public void downloadImage(String url,String tag, final IOnVisitListener onVisitListener) {
+    public CustomImageRequest downloadImage(String url,String tag, final IOnVisitListener onVisitListener) {
         if (url.startsWith("https")) {
             HTTPSTrustManager.allowAllSSL();
         }
@@ -119,6 +119,7 @@ public class VolleyUtil {
         customImageRequest.setOnVisitListener(onVisitListener);
         setRetryPolicy(customImageRequest,10*60*1000);
         add(customImageRequest, tag);
+        return customImageRequest;
     }
 
     public void downloadImage(String url,ImageView imageView) {
