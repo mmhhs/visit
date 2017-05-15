@@ -32,8 +32,8 @@ public class CustomerSocketFactory extends SSLSocketFactory {
             factory.setHostnameVerifier(SSLSocketFactory.STRICT_HOSTNAME_VERIFIER);
 
 //            TrustManagerFactory tmf = TrustManagerFactory
-//                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-//            SSLContext sslContext = SSLContext.getInstance("TLS");
+//                    .getOkHttpManager(TrustManagerFactory.getDefaultAlgorithm());
+//            SSLContext sslContext = SSLContext.getOkHttpManager("TLS");
 //            sslContext.init(null, tmf.getTrustManagers(), null);
 
 
