@@ -1,4 +1,4 @@
-package com.little.visit.util;
+package com.little.visit.okhttp;
 
 import android.content.Context;
 
@@ -208,6 +208,7 @@ public class OkHttpUtil {
 
     public void downloadFile(String tag, String url, final String filePath, final IOnVisitListener onVisitListener) {
         Request request = new Request.Builder().url(url).build();
+        ProgressHelper.addProgressResponseListener(mOkHttpClient,onVisitListener);
         Call call = mOkHttpClient.newCall(request);
         call.enqueue(new Callback() {
             @Override

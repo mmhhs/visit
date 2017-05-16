@@ -19,7 +19,7 @@ import com.little.visit.listener.IOnVisitResultListener;
 import com.little.visit.model.ResultEntity;
 import com.little.visit.util.HttpUtil;
 import com.little.visit.util.JacksonUtil;
-import com.little.visit.util.OkHttpUtil;
+import com.little.visit.okhttp.OkHttpUtil;
 import com.little.visit.util.PopupUtil;
 import com.little.visit.util.StringUtil;
 import com.little.visit.util.ToastUtil;
@@ -33,6 +33,7 @@ public class OKHttpTask implements IOnTaskListener{
     public final static int NET_ERROR = 6;//没有网络
     public final static int POPUPSTYLE = 1;//弹窗
     public final static int VIEWSTYLE = 2;//界面
+    public final static int PROGRESSSTYLE = 3;//进度弹窗
     public final static int INTERFACE_VISIT = 1;//接口
     public final static int UPLOAD_FILE_VISIT = 2;//文件上传
     public final static int DOWNLOAD_FILE_VISIT = 3;//文件下载
@@ -45,6 +46,7 @@ public class OKHttpTask implements IOnTaskListener{
 
     private PopupUtil popupUtil;//弹窗管理
     private PopupWindow loadPopupWindow;//加载框
+    private String popupTitle = "";//标题
 
     private IOnVisitResultListener onVisitResultListener;//返回值判断结果监听
     //显示
@@ -53,6 +55,9 @@ public class OKHttpTask implements IOnTaskListener{
     private boolean showTipSuccess = false;//成功时显示提示信息
     private boolean showTipError = true;//错误时显示提示信息
     private boolean showNetToast = true;//显示网络问题toast
+    private long totalSize=0;//下载文件大小
+    private boolean silenceDownload = false;//静默下载
+    private boolean canCancelDownload = false;//能否终止下载
 
     //访问
     private int visitType = INTERFACE_VISIT;//访问类型 接口，文件上传，文件下载，图片下载
@@ -142,9 +147,9 @@ public class OKHttpTask implements IOnTaskListener{
      * @param filePath
      * @param parseClass
      */
-    public OKHttpTask(Context context, String tagString, View contentView, boolean showLoading, int visitType, String httpUrl, String filePath, Class parseClass) {
+    public OKHttpTask(Context context, String tagString, int showStyle, View contentView, boolean showLoading, int visitType, String httpUrl, String filePath, Class parseClass) {
         this.context = context;
-        this.showStyle = POPUPSTYLE;
+        this.showStyle = showStyle;
         this.contentView = contentView;
         this.showLoading = showLoading;
         this.visitType = visitType;
@@ -193,6 +198,9 @@ public class OKHttpTask implements IOnTaskListener{
         okHttpUtil = OkHttpUtil.getInstance(context);
         if (showStyle==POPUPSTYLE){
             popupUtil = new PopupUtil(context);
+            if (!StringUtil.isEmpty(popupTitle)){
+                popupUtil.setPopupTitle(popupTitle);
+            }
         }else if (showStyle==VIEWSTYLE){
             viewUtil = new ViewUtil();
         }
@@ -207,10 +215,15 @@ public class OKHttpTask implements IOnTaskListener{
                     String response = msg.getData().getString("response");
                     onTaskSuccess(response);
                 }else if (type==2){
-                    onTaskError();
+                    long bytes = msg.getData().getLong("bytes");
+                    long contentLength = msg.getData().getLong("contentLength");
+                    boolean done = msg.getData().getBoolean("done");
+                    onProgress(bytes,contentLength,done);
                 }else if (type==3){
-                    onTaskFinish();
+                    onTaskError();
                 }else if (type==4){
+                    onTaskFinish();
+                }else if (type==5){
                     onTaskCancel();
                 }
             }
@@ -231,7 +244,7 @@ public class OKHttpTask implements IOnTaskListener{
             public void onError() {
                 Message message = new Message();
                 Bundle bundle = new Bundle();
-                bundle.putInt("type",2);
+                bundle.putInt("type",3);
                 message.setData(bundle);
                 mHandler.sendMessage(message);
             }
@@ -240,7 +253,7 @@ public class OKHttpTask implements IOnTaskListener{
             public void onFinish() {
                 Message message = new Message();
                 Bundle bundle = new Bundle();
-                bundle.putInt("type",3);
+                bundle.putInt("type",4);
                 message.setData(bundle);
                 mHandler.sendMessage(message);
             }
@@ -249,7 +262,19 @@ public class OKHttpTask implements IOnTaskListener{
             public void onCancel() {
                 Message message = new Message();
                 Bundle bundle = new Bundle();
-                bundle.putInt("type",4);
+                bundle.putInt("type",5);
+                message.setData(bundle);
+                mHandler.sendMessage(message);
+            }
+
+            @Override
+            public void onProgress(long bytes, long contentLength, boolean done) {
+                Message message = new Message();
+                Bundle bundle = new Bundle();
+                bundle.putInt("type",2);
+                bundle.putLong("bytes",bytes);
+                bundle.putLong("contentLength", contentLength);
+                bundle.putBoolean("done", done);
                 message.setData(bundle);
                 mHandler.sendMessage(message);
             }
@@ -281,6 +306,10 @@ public class OKHttpTask implements IOnTaskListener{
                     }else {
                         ToastUtil.addToast(context, context.getString(R.string.visit3));
                     }
+                }else if (showStyle==PROGRESSSTYLE){
+                    if (showNetToast) {
+                        ToastUtil.addToast(context, context.getResources().getString(R.string.visit3));
+                    }
                 }
             }else {
                 if (showLoading) {
@@ -291,6 +320,10 @@ public class OKHttpTask implements IOnTaskListener{
                     }else if (showStyle==VIEWSTYLE){
                         if(contentView != null && loadingLayout != null){
                             viewUtil.addLoadView(context, loadingString, contentView, loadingLayout);
+                        }
+                    }else if (showStyle==PROGRESSSTYLE){
+                        if (!silenceDownload&&contentView!=null){
+                            loadPopupWindow = popupUtil.showDownloadPopup(contentView, canCancelDownload);
                         }
                     }
                 }
@@ -421,6 +454,13 @@ public class OKHttpTask implements IOnTaskListener{
         isCanceled = true;
     }
 
+    @Override
+    public void onProgress(long bytes, long contentLength, boolean done) {
+        if (!silenceDownload){
+            popupUtil.updateProgressInfo(""+bytes, contentLength);
+        }
+    }
+
     /**
      * 判断登录失效
      */
@@ -523,5 +563,29 @@ public class OKHttpTask implements IOnTaskListener{
 
     public void setTagString(String tagString) {
         this.tagString = tagString;
+    }
+
+    public String getPopupTitle() {
+        return popupTitle;
+    }
+
+    public void setPopupTitle(String popupTitle) {
+        this.popupTitle = popupTitle;
+    }
+
+    public boolean isSilenceDownload() {
+        return silenceDownload;
+    }
+
+    public void setSilenceDownload(boolean silenceDownload) {
+        this.silenceDownload = silenceDownload;
+    }
+
+    public boolean isCanCancelDownload() {
+        return canCancelDownload;
+    }
+
+    public void setCanCancelDownload(boolean canCancelDownload) {
+        this.canCancelDownload = canCancelDownload;
     }
 }

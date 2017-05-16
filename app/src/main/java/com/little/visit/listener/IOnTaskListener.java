@@ -8,4 +8,5 @@ public interface IOnTaskListener<T> {
     void onTaskFinish();
     void onTaskVisit();
     void onTaskCancel();
+    void onProgress(long bytes, long contentLength, boolean done);
 }

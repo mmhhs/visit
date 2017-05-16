@@ -6,4 +6,5 @@ public interface IOnVisitListener<T> {
     void onError();
     void onFinish();
     void onCancel();
+    void onProgress(long bytes, long contentLength, boolean done);
 }

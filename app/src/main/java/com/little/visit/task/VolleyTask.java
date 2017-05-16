@@ -268,6 +268,11 @@ public class VolleyTask implements IOnTaskListener{
                     public void onCancel() {
                         onTaskCancel();
                     }
+
+                    @Override
+                    public void onProgress(long bytes, long contentLength, boolean done) {
+
+                    }
                 });
                 break;
             case UPLOAD_FILE_VISIT:
@@ -290,6 +295,11 @@ public class VolleyTask implements IOnTaskListener{
                     @Override
                     public void onCancel() {
                         onTaskCancel();
+                    }
+
+                    @Override
+                    public void onProgress(long bytes, long contentLength, boolean done) {
+
                     }
                 });
                 break;
@@ -314,6 +324,11 @@ public class VolleyTask implements IOnTaskListener{
                     public void onCancel() {
                         onTaskCancel();
                     }
+
+                    @Override
+                    public void onProgress(long bytes, long contentLength, boolean done) {
+
+                    }
                 });
                 break;
             case DOWNLOAD_IMAGE_VISIT:
@@ -336,6 +351,11 @@ public class VolleyTask implements IOnTaskListener{
                     @Override
                     public void onCancel() {
                         onTaskCancel();
+                    }
+
+                    @Override
+                    public void onProgress(long bytes, long contentLength, boolean done) {
+
                     }
                 });
                 break;
@@ -450,6 +470,11 @@ public class VolleyTask implements IOnTaskListener{
     @Override
     public void onTaskCancel() {
         isCanceled = true;
+    }
+
+    @Override
+    public void onProgress(long bytes, long contentLength, boolean done) {
+
     }
 
     /**
