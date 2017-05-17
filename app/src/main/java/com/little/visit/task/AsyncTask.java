@@ -130,11 +130,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     a second execution is attempted.)</li>
  * </ul>
  */
-public abstract class AsycnTask<Params, Progress, Result> {
+public abstract class AsyncTask<Params, Progress, Result> {
 	
-	private static List<AsycnTask> taskList = new ArrayList();
+	private static List<AsyncTask> taskList = new ArrayList();
 	
-    private static final String LOG_TAG = "AsycnTask";
+    private static final String LOG_TAG = "AsyncTask";
 
     private static final int CORE_POOL_SIZE = 5;
     private static final int MAXIMUM_POOL_SIZE = 10;
@@ -148,7 +148,7 @@ public abstract class AsycnTask<Params, Progress, Result> {
 
         @Override
 		public Thread newThread(Runnable r) {
-            return new Thread(r, "AsycnTask #" + mCount.getAndIncrement());
+            return new Thread(r, "AsyncTask #" + mCount.getAndIncrement());
         }
     };
 
@@ -180,14 +180,14 @@ public abstract class AsycnTask<Params, Progress, Result> {
          */
         RUNNING,
         /**
-         * Indicates that {@link AsycnTask#onPostExecute(Object)} has finished.
+         * Indicates that {@link AsyncTask#onPostExecute(Object)} has finished.
          */
         FINISHED,
     }
     
     public static void cancelTasks(){
     	while(taskList.size()>0){
-    		AsycnTask task = taskList.remove(0);
+    		AsyncTask task = taskList.remove(0);
     		task.cancel(true);
     	}
     }
@@ -195,7 +195,7 @@ public abstract class AsycnTask<Params, Progress, Result> {
     /**
      * Creates a new user task. This constructor must be invoked on the UI thread.
      */
-    public AsycnTask() {
+    public AsyncTask() {
         mWorker = new WorkerRunnable<Params, Result>() {
             @Override
 			public Result call() throws Exception {
@@ -219,7 +219,7 @@ public abstract class AsycnTask<Params, Progress, Result> {
                             e.getCause());
                 } catch (CancellationException e) {
                     message = sHandler.obtainMessage(MESSAGE_POST_CANCEL,
-                            new UserTaskResult<Result>(AsycnTask.this, (Result[]) null));
+                            new UserTaskResult<Result>(AsyncTask.this, (Result[]) null));
                     message.sendToTarget();
                     return;
                 } catch (Throwable t) {
@@ -228,7 +228,7 @@ public abstract class AsycnTask<Params, Progress, Result> {
                 }
 
                 message = sHandler.obtainMessage(MESSAGE_POST_RESULT,
-                        new UserTaskResult<Result>(AsycnTask.this, result));
+                        new UserTaskResult<Result>(AsyncTask.this, result));
                 message.sendToTarget();
             }
         };
@@ -389,9 +389,9 @@ public abstract class AsycnTask<Params, Progress, Result> {
      * @return This instance of UserTask.
      *
      * @throws IllegalStateException If {@link #getStatus()} returns either
-     *         {@link AsycnTask.Status#RUNNING} or {@link AsycnTask.Status#FINISHED}.
+     *         {@link AsyncTask.Status#RUNNING} or {@link AsyncTask.Status#FINISHED}.
      */
-    public  final AsycnTask<Params, Progress, Result> execute(Params... params) {
+    public  final AsyncTask<Params, Progress, Result> execute(Params... params) {
         if (mStatus != Status.PENDING) {
             switch (mStatus) {
                 case RUNNING:
@@ -463,10 +463,10 @@ public abstract class AsycnTask<Params, Progress, Result> {
 
     @SuppressWarnings({"RawUseOfParameterizedType"})
     private static class UserTaskResult<Data> {
-        final AsycnTask mTask;
+        final AsyncTask mTask;
         final Data[] mData;
 
-        UserTaskResult(AsycnTask task, Data... data) {
+        UserTaskResult(AsyncTask task, Data... data) {
             mTask = task;
             mData = data;
         }

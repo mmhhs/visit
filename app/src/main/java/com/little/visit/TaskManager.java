@@ -1,7 +1,7 @@
 package com.little.visit;
 
 
-import com.little.visit.task.AsycnTask;
+import com.little.visit.task.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +25,12 @@ public class TaskManager {
 	/**
 	 * 添加线程
 	 */
-	public void addTask(String tagString,AsycnTask task){
+	public void addTask(String tagString,AsyncTask task){
 		try {
 			TaskModel taskModel = new TaskModel();
 			taskModel.tagString = tagString;
 			taskModel.task = task;
-			taskModel.creatTime = System.currentTimeMillis();
+			taskModel.createTime = System.currentTimeMillis();
 			taskList.add(taskModel);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -58,17 +58,17 @@ public class TaskManager {
 	 * 关闭tagString所标识的Activity或者Fragment中所有还在运行的线程
 	 * @param tagString
 	 */
-	public void cancelLimitTasks(String tagString){
+	public void cancelTasksByTag(String tagString){
 		List<TaskModel> taskModels = new ArrayList<TaskModel>();
 		for(int i=0;i<taskList.size();i++){
 			try {
 				TaskModel taskModel = taskList.get(i);
 				if(taskModel.tagString.equals(tagString)&&taskModel.task!=null){
-					long time = System.currentTimeMillis()-taskModel.getCreatTime();
+					long time = System.currentTimeMillis()-taskModel.getCreateTime();
 					if (time>500){
 						taskModel.task.cancel(true);
 						taskModels.add(taskModel);
-//						LogUtil.e("******cancelLimitTasks*******"+ System.currentTimeMillis());
+//						LogUtil.e("******cancelTasksByTag*******"+ System.currentTimeMillis());
 					}
 				}
 			} catch (Exception e) {
@@ -87,7 +87,7 @@ public class TaskManager {
 	/**
 	 * 关闭一个还在运行的线程
 	 */
-	public void cancelOneTasks(AsycnTask task){
+	public void cancelOneTask(AsyncTask task){
 		for(int i=0;i<taskList.size();i++){
 			try {
 				TaskModel taskModel = taskList.get(i);
@@ -107,7 +107,7 @@ public class TaskManager {
 	 * 移除task
 	 * @param task
 	 */
-	public void removeTask(AsycnTask task){
+	public void removeTask(AsyncTask task){
 		for(int i=0;i<taskList.size();i++){
 			try {
 				TaskModel taskModel = taskList.get(i);
@@ -123,16 +123,16 @@ public class TaskManager {
 
 
 	public class TaskModel{
-		long creatTime;
+		long createTime;
 		String tagString;
-		AsycnTask task;
+		AsyncTask task;
 
-		public long getCreatTime() {
-			return creatTime;
+		public long getCreateTime() {
+			return createTime;
 		}
 
-		public void setCreatTime(long creatTime) {
-			this.creatTime = creatTime;
+		public void setCreateTime(long createTime) {
+			this.createTime = createTime;
 		}
 
 		public String getTagString() {
@@ -143,11 +143,11 @@ public class TaskManager {
 			this.tagString = tagString;
 		}
 
-		public AsycnTask getTask() {
+		public AsyncTask getTask() {
 			return task;
 		}
 
-		public void setTask(AsycnTask task) {
+		public void setTask(AsyncTask task) {
 			this.task = task;
 		}
 	}

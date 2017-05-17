@@ -588,4 +588,6 @@ public class OKHttpTask implements IOnTaskListener{
     public void setCanCancelDownload(boolean canCancelDownload) {
         this.canCancelDownload = canCancelDownload;
     }
+
+
 }

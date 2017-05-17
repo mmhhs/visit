@@ -8,4 +8,5 @@
     <string name="visit5">当前没有数据</string>
     <string name="visit6">下载失败</string>
     <string name="visit7">登录失效，请重新登录</string>
+    <string name="visit8">操作终止！</string>
 </resources>
