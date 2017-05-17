@@ -28,6 +28,7 @@ import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -44,6 +45,7 @@ public class OkHttpUtil {
     private Context context;//最好使用Application的上下文
     private OkHttpClient mOkHttpClient;
     private OKHttpManager okHttpManager;
+    private OkHttpClient.Builder okHttpClientBuilder;
 
     public OkHttpUtil(Context context) {
         this.context = context;
@@ -63,19 +65,19 @@ public class OkHttpUtil {
             cacheDir.mkdirs();
         }
         int cacheSize = 10 * 1024 * 1024;
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+        okHttpClientBuilder = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(5 * 60, TimeUnit.SECONDS)
                 .readTimeout(5 * 60, TimeUnit.SECONDS)
                 .cache(new Cache(cacheDir.getAbsoluteFile(), cacheSize));
-        builder.sslSocketFactory(createSSLSocketFactory());
-        builder.hostnameVerifier(new HostnameVerifier() {
+        okHttpClientBuilder.sslSocketFactory(createSSLSocketFactory());
+        okHttpClientBuilder.hostnameVerifier(new HostnameVerifier() {
             @Override
             public boolean verify(String hostname, SSLSession session) {
                 return true;
             }
         });
-        mOkHttpClient = builder.build();
+        mOkHttpClient = okHttpClientBuilder.build();
         okHttpManager = OKHttpManager.getOkHttpManager();
     }
 
@@ -207,8 +209,19 @@ public class OkHttpUtil {
     }
 
     public void downloadFile(String tag, String url, final String filePath, final IOnVisitListener onVisitListener) {
+        okHttpClientBuilder.addInterceptor(new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                //拦截
+                Response originalResponse = chain.proceed(chain.request());
+                //包装响应体并返回
+                return originalResponse.newBuilder()
+                        .body(new ProgressResponseBody(originalResponse.body(), onVisitListener))
+                        .build();
+            }
+        });
+        OkHttpClient mOkHttpClient = okHttpClientBuilder.build();
         Request request = new Request.Builder().url(url).build();
-        ProgressHelper.addProgressResponseListener(mOkHttpClient,onVisitListener);
         Call call = mOkHttpClient.newCall(request);
         call.enqueue(new Callback() {
             @Override

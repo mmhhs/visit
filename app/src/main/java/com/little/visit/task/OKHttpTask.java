@@ -2,7 +2,6 @@ package com.little.visit.task;
 
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,9 +16,9 @@ import com.little.visit.listener.IOnTaskListener;
 import com.little.visit.listener.IOnVisitListener;
 import com.little.visit.listener.IOnVisitResultListener;
 import com.little.visit.model.ResultEntity;
+import com.little.visit.okhttp.OkHttpUtil;
 import com.little.visit.util.HttpUtil;
 import com.little.visit.util.JacksonUtil;
-import com.little.visit.okhttp.OkHttpUtil;
 import com.little.visit.util.PopupUtil;
 import com.little.visit.util.StringUtil;
 import com.little.visit.util.ToastUtil;
@@ -152,6 +151,7 @@ public class OKHttpTask implements IOnTaskListener{
         this.showStyle = showStyle;
         this.contentView = contentView;
         this.showLoading = showLoading;
+        this.silenceDownload = !showLoading;
         this.visitType = visitType;
         this.httpUrl = httpUrl;
         this.tagString = tagString;
@@ -203,6 +203,11 @@ public class OKHttpTask implements IOnTaskListener{
             }
         }else if (showStyle==VIEWSTYLE){
             viewUtil = new ViewUtil();
+        }else if (showStyle==PROGRESSSTYLE){
+            popupUtil = new PopupUtil(context);
+            if (!StringUtil.isEmpty(popupTitle)){
+                popupUtil.setPopupTitle(popupTitle);
+            }
         }
         if(StringUtil.isEmpty(loadingString)){
             loadingString = context.getResources().getString(R.string.visit0);
@@ -269,6 +274,7 @@ public class OKHttpTask implements IOnTaskListener{
 
             @Override
             public void onProgress(long bytes, long contentLength, boolean done) {
+
                 Message message = new Message();
                 Bundle bundle = new Bundle();
                 bundle.putInt("type",2);
@@ -284,7 +290,7 @@ public class OKHttpTask implements IOnTaskListener{
     public void execute(){
         onTaskPreExecute();
         if(netFlag!=NET_ERROR){
-           onTaskVisit();
+            onTaskVisit();
         }
     }
 
@@ -328,7 +334,7 @@ public class OKHttpTask implements IOnTaskListener{
                     }
                 }
             }
-        } catch (Resources.NotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -439,6 +445,10 @@ public class OKHttpTask implements IOnTaskListener{
                     if (!showErrorView){
                         viewUtil.removeLoadView(contentView, loadingLayout);
                     }
+                }else if (showStyle==PROGRESSSTYLE){
+                    if (loadPopupWindow!=null) {
+                        loadPopupWindow.dismiss();
+                    }
                 }
             }
         } catch (Exception e) {
@@ -459,6 +469,18 @@ public class OKHttpTask implements IOnTaskListener{
         if (!silenceDownload){
             popupUtil.updateProgressInfo(""+bytes, contentLength);
         }
+        if (onVisitResultListener!=null){
+            onVisitResultListener.onProgress(bytes,contentLength);
+        }
+    }
+
+    /**
+     * 添加空视图
+     * @param str 描述文字
+     * @param imageResourceId 图片资源
+     */
+    public void addEmptyView(String title, String str, int imageResourceId){
+        viewUtil.addEmptyView(context, title, str, imageResourceId, contentView, loadingLayout, onRetryListener);
     }
 
     /**
@@ -589,5 +611,7 @@ public class OKHttpTask implements IOnTaskListener{
         this.canCancelDownload = canCancelDownload;
     }
 
-
+    public PopupUtil getPopupUtil() {
+        return popupUtil;
+    }
 }
