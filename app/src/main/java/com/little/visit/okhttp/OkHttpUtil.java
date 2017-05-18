@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.little.visit.OKHttpManager;
 import com.little.visit.listener.IOnVisitListener;
+import com.little.visit.util.LogUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,6 +47,7 @@ public class OkHttpUtil {
     private OkHttpClient mOkHttpClient;
     private OKHttpManager okHttpManager;
     private OkHttpClient.Builder okHttpClientBuilder;
+    private boolean IS_DEBUG = false;
 
     public OkHttpUtil(Context context) {
         this.context = context;
@@ -82,7 +84,7 @@ public class OkHttpUtil {
     }
 
 
-    public void visit(int methodType, String tag, String url, Map<String,String> params, final IOnVisitListener onVisitListener){
+    public void visit(int methodType, String tag, final String url, Map<String,String> params, final IOnVisitListener onVisitListener){
         Request.Builder requestBuilder = new Request.Builder();
         RequestBody formBody = null;
         Request request = null;
@@ -113,6 +115,7 @@ public class OkHttpUtil {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                LogUtil.e("url:"+url+" onFailure:"+e.getMessage());
                 if (!call.isCanceled()){
                     if (onVisitListener!=null){
                         onVisitListener.onError();
@@ -140,6 +143,7 @@ public class OkHttpUtil {
                     if (onVisitListener!=null){
                         onVisitListener.onSuccess(str);
                     }
+                    LogUtil.e("url:"+url+" onResponse:"+str);
                 }else {
                     if (onVisitListener!=null){
                         onVisitListener.onCancel();
@@ -154,7 +158,7 @@ public class OkHttpUtil {
         okHttpManager.addTask(tag,call);
     }
 
-    public void uploadFile(String tag, String url, String folderName, List<File> fileList, Map<String,String> params,  final IOnVisitListener onVisitListener){
+    public void uploadFile(String tag, final String url, String folderName, List<File> fileList, Map<String,String> params,  final IOnVisitListener onVisitListener){
         MultipartBody.Builder builder = new MultipartBody.Builder();
         builder.setType(MultipartBody.FORM);
         for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -172,6 +176,7 @@ public class OkHttpUtil {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                LogUtil.e("url:"+url+" onFailure:"+e.getMessage());
                 if (!call.isCanceled()) {
                     if (onVisitListener != null) {
                         onVisitListener.onError();
@@ -194,6 +199,7 @@ public class OkHttpUtil {
                     if (onVisitListener != null) {
                         onVisitListener.onSuccess(str);
                     }
+                    LogUtil.e("url:"+url+" onResponse:"+str);
                 } else {
                     if (onVisitListener != null) {
                         onVisitListener.onCancel();
@@ -208,7 +214,7 @@ public class OkHttpUtil {
         okHttpManager.addTask(tag,call);
     }
 
-    public void downloadFile(String tag, String url, final String filePath, final IOnVisitListener onVisitListener) {
+    public void downloadFile(String tag, final String url, final String filePath, final IOnVisitListener onVisitListener) {
         okHttpClientBuilder.addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -226,6 +232,7 @@ public class OkHttpUtil {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                LogUtil.e("url:"+url+" onFailure:"+e.getMessage());
                 if (!call.isCanceled()) {
                     if (onVisitListener != null) {
                         onVisitListener.onError();
@@ -262,6 +269,7 @@ public class OkHttpUtil {
                 if (!call.isCanceled()) {
                     if (onVisitListener != null && !hasException) {
                         onVisitListener.onSuccess(filePath);
+                        LogUtil.e("url:"+url+" onResponse:"+filePath);
                     } else {
                         onVisitListener.onError();
                     }
@@ -333,5 +341,10 @@ public class OkHttpUtil {
         }
 
         return ssfFactory;
+    }
+
+    public void setIS_DEBUG(boolean IS_DEBUG) {
+        LogUtil.setIsDebug(IS_DEBUG);
+        this.IS_DEBUG = IS_DEBUG;
     }
 }

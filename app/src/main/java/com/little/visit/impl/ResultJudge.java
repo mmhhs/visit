@@ -11,6 +11,8 @@ import com.little.visit.util.ToastUtil;
 public class ResultJudge implements ResultJudgeInterface{
 
     private static ResultJudge resultJudge = null;
+    private String successCode = "0";
+    private String loginInvalidCode = "1000";
 
     public ResultJudge() {
     }
@@ -32,7 +34,7 @@ public class ResultJudge implements ResultJudgeInterface{
         if (StringUtil.isEmpty(code)){
             return false;
         }
-        if (code.equals("2000")){
+        if (code.equals(successCode)){
             return true;
         }else{
             return false;
@@ -49,7 +51,7 @@ public class ResultJudge implements ResultJudgeInterface{
         if (StringUtil.isEmpty(code)){
             return false;
         }
-        if(code.equals("1000")){
+        if(code.equals(loginInvalidCode)){
             return true;
         }else{
             return false;
@@ -62,5 +64,21 @@ public class ResultJudge implements ResultJudgeInterface{
     @Override
     public void dealLoginInvalid(Context context,View view) {
         ToastUtil.addToast(context,context.getString(R.string.visit7));
+    }
+
+    public String getSuccessCode() {
+        return successCode;
+    }
+
+    public void setSuccessCode(String successCode) {
+        this.successCode = successCode;
+    }
+
+    public String getLoginInvalidCode() {
+        return loginInvalidCode;
+    }
+
+    public void setLoginInvalidCode(String loginInvalidCode) {
+        this.loginInvalidCode = loginInvalidCode;
     }
 }
